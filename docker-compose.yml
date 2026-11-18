@@ -31,5 +31,51 @@ services:
       timeout: 5s
       retries: 10
 
+  orders-api:
+    build:
+      context: ./orders-api
+    container_name: orderflow-orders-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__OrdersDb: "Host=${POSTGRES_HOST:-postgres};Port=${POSTGRES_PORT:-5432};Database=${ORDERS_DB_NAME:-orders_db};Username=${POSTGRES_USER:-orderflow};Password=${POSTGRES_PASSWORD:-orderflow_dev_pwd}"
+      RabbitMq__Host: ${RABBITMQ_HOST:-rabbitmq}
+      RabbitMq__Port: ${RABBITMQ_PORT:-5672}
+      RabbitMq__Username: ${RABBITMQ_USER:-orderflow}
+      RabbitMq__Password: ${RABBITMQ_PASS:-orderflow_dev_pwd}
+      RabbitMq__ExchangeName: ${RABBITMQ_EXCHANGE:-orderflow.events}
+    ports:
+      - "${ORDERS_API_PORT:-5001}:8080"
+
+  inventory-worker:
+    build:
+      context: ./inventory-worker
+    container_name: orderflow-inventory-worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__InventoryDb: "Host=${POSTGRES_HOST:-postgres};Port=${POSTGRES_PORT:-5432};Database=${INVENTORY_DB_NAME:-inventory_db};Username=${POSTGRES_USER:-orderflow};Password=${POSTGRES_PASSWORD:-orderflow_dev_pwd}"
+      RabbitMq__Host: ${RABBITMQ_HOST:-rabbitmq}
+      RabbitMq__Port: ${RABBITMQ_PORT:-5672}
+      RabbitMq__Username: ${RABBITMQ_USER:-orderflow}
+      RabbitMq__Password: ${RABBITMQ_PASS:-orderflow_dev_pwd}
+      RabbitMq__ExchangeName: ${RABBITMQ_EXCHANGE:-orderflow.events}
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: orderflow-frontend
+    depends_on:
+      - orders-api
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+
 volumes:
   postgres_data:
