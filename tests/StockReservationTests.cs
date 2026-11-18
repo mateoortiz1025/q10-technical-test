@@ -7,6 +7,9 @@ using Xunit;
 
 namespace OrderFlow.Tests;
 
+/// <summary>
+/// Pruebas de integración en memoria (SQLite) para la reserva atómica de stock e idempotencia.
+/// </summary>
 public sealed class StockReservationTests : IDisposable
 {
     private readonly SqliteConnection _connection;
@@ -26,6 +29,9 @@ public sealed class StockReservationTests : IDisposable
         InventorySeeder.SeedAsync(_db).GetAwaiter().GetResult();
     }
 
+    /// <summary>
+    /// Verifica que cuando hay stock suficiente, se descuenta la cantidad solicitada y retorna Reserved.
+    /// </summary>
     [Fact]
     public async Task ReserveAsync_SufficientStock_DecrementsStockAndReturnsReserved()
     {
@@ -40,6 +46,9 @@ public sealed class StockReservationTests : IDisposable
         Assert.Equal(12, product.Disponible);
     }
 
+    /// <summary>
+    /// Verifica la idempotencia: procesar dos veces el mismo EventId retorna Duplicate y no descuenta doble.
+    /// </summary>
     [Fact]
     public async Task ReserveAsync_DuplicateEventId_IsIdempotentAndDoesNotDoubleDecrement()
     {
@@ -58,6 +67,9 @@ public sealed class StockReservationTests : IDisposable
         Assert.Equal(45, product.Disponible);
     }
 
+    /// <summary>
+    /// Verifica que si no alcanza el stock, retorna Rejected con el motivo y deja el inventario intacto.
+    /// </summary>
     [Fact]
     public async Task ReserveAsync_InsufficientStock_ReturnsRejectedAndKeepsStockIntact()
     {
@@ -73,6 +85,9 @@ public sealed class StockReservationTests : IDisposable
         Assert.Equal(3, product.Disponible);
     }
 
+    /// <summary>
+    /// Verifica que un SKU inexistente en el inventario retorna Rejected con un mensaje claro.
+    /// </summary>
     [Fact]
     public async Task ReserveAsync_UnknownSku_ReturnsRejected()
     {

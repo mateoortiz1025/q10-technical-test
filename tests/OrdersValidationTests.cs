@@ -4,8 +4,14 @@ using Xunit;
 
 namespace OrderFlow.Tests;
 
+/// <summary>
+/// Pruebas unitarias para las reglas de validación del endpoint POST /orders.
+/// </summary>
 public sealed class OrdersValidationTests
 {
+    /// <summary>
+    /// Verifica que un pedido con cliente, SKU y cantidad dentro del rango (1-100) no genere errores.
+    /// </summary>
     [Fact]
     public void ValidateRequest_ValidPayload_ReturnsNoErrors()
     {
@@ -16,6 +22,9 @@ public sealed class OrdersValidationTests
         Assert.Empty(errors);
     }
 
+    /// <summary>
+    /// Verifica que los campos obligatorios vacíos o cantidades fuera de rango (1-100) retornen el error esperado.
+    /// </summary>
     [Theory]
     [InlineData(null, "LAPTOP-PRO-15", 1, "clienteNombre")]
     [InlineData("   ", "LAPTOP-PRO-15", 1, "clienteNombre")]
