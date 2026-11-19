@@ -16,9 +16,10 @@ Sistema distribuido *event-driven* para la creación de pedidos y reserva asínc
 ## Arranque Rápido
 
 ### 1. Levantar todo con Docker Compose
-No requiere pasos previos (todas las variables tienen valores por defecto en `docker-compose.yml`; opcionalmente puedes copiar `.env.example` a `.env`):
+Copia el archivo de variables de entorno de ejemplo y levanta los servicios:
 
 ```bash
+cp .env.example .env
 docker compose up --build
 ```
 
@@ -76,7 +77,7 @@ React (3000) ──POST /api/orders──▶ Orders.Api (5001) ──(OrderCreat
 * **Escalado horizontal de `Orders.Api` con SignalR:** si se despliegan múltiples réplicas de `Orders.Api` (como en `k8s/orders-api-deployment.yaml` con `replicas: 2`), agregaría un **Redis Backplane** para SignalR de modo que cualquier réplica pueda notificar a clientes conectados a otra instancia.
 * **Consulta y gestión de inventario:** agregar endpoints (`GET /inventory`, `POST /inventory`, `PATCH /inventory/{sku}/stock`) o una proyección CQRS en `Orders.Api` para listar el stock disponible en tiempo real en el frontend, además de permitir crear nuevos productos y reponer stock sin depender del *seed* inicial.
 * **Segmentación de red en Docker Compose:** separar los servicios en redes aisladas (`frontend-net` para `frontend` + `orders-api`, y `backend-net` con `internal: true` para `orders-api` + `inventory-worker` + `postgres` + `rabbitmq`), evitando que la capa web tenga visibilidad de red hacia la base de datos o el broker.
-* **Migraciones formales:** reemplazar `EnsureCreatedAsync()` por migraciones versionadas de EF Core (`dotnet ef migrations`) y añadir tests E2E con Testcontainers (PostgreSQL + RabbitMQ reales).
+* **Migraciones formales:** reemplazar `EnsureCreatedAsync()` por migraciones versionadas de EF Core (`dotnet ef migrations`) para evolucionar el esquema de base de datos de forma segura en producción.
 
 ---
 

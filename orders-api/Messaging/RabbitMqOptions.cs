@@ -6,8 +6,8 @@ public sealed class RabbitMqOptions
 
     public string Host { get; set; } = "localhost";
     public int Port { get; set; } = 5672;
-    public string Username { get; set; } = "orderflow";
-    public string Password { get; set; } = "orderflow_dev_pwd";
+    public string Username { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
     public string ExchangeName { get; set; } = "orderflow.events";
 }
 
